@@ -60,6 +60,12 @@ RFC 5280 Section 4.2.
 1.3.6.1.5.5.7.1.1
 4.2.2.1. Authority Information Access
 
+RFC 6962
+Certificate Transparency
+1.3.6.1.4.1.11129.2.4.2
+Extended Validation Certificates
+
+
 4.2.2.2. Subject Information Access
 
 
@@ -94,7 +100,7 @@ class CertExten
   CharBuf extenKeyUsageObjID;
   CharBuf authorityInfoAccessObjID;
   CharBuf subjectInfoAccessObjID;
-
+  CharBuf certTransparencyObjID;
   bool isACertAuthority = false;
 
   public:
@@ -138,6 +144,9 @@ class CertExten
 
     // subjectInfoAccessObjID
 
+    certTransparencyObjID.setFromCharPoint(
+       "1.3.6.1.4.1.11129.2.4.2" );
+
 
     }
 
@@ -171,5 +180,13 @@ class CertExten
   void parseIssuerAltName(
                  const CharBuf& octetString,
                  const bool critical );
+
+  void parseSubjectKeyID(
+                   const CharBuf& octetString,
+                   const bool critical );
+
+  void parseCrlDistribPts(
+                    const CharBuf& octetString,
+                    const bool critical );
 
   };

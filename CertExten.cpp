@@ -193,8 +193,8 @@ if( objIDOut.isEqual( keyUsageObjID ))
 
 if( objIDOut.isEqual( subjectKeyIDObjID ))
   {
-  StIO::putS( "CertExten: subjectKeyIDObjID." );
-  return;
+  parseSubjectKeyID( octetString,
+                     critical );
   }
 
 if( objIDOut.isEqual( subjectAltNameObjID ))
@@ -211,8 +211,9 @@ if( objIDOut.isEqual( issuerAltNameObjID ))
 
 if( objIDOut.isEqual( crlDistribPtsObjID ))
   {
-  StIO::putS( "CertExten: crlDistribPtsObjID." );
-  return;
+  parseCrlDistribPts( octetString,
+                      critical );
+
   }
 
 if( objIDOut.isEqual( certPolicyObjID ))
@@ -237,6 +238,18 @@ if( objIDOut.isEqual( authorityInfoAccessObjID ))
   {
   StIO::putS(
       "CertExten: authorityInfoAccessObjID." );
+  return;
+  }
+
+if( objIDOut.isEqual( certTransparencyObjID ))
+  {
+  // RFC 6962
+  // Certificate Transparency
+  // 1.3.6.1.4.1.11129.2.4.2
+  // Extended Validation Certificates
+
+  StIO::putS(
+      "CertExten: certTransparencyObjID." );
   return;
   }
 
@@ -469,9 +482,7 @@ void CertExten::parseSubjectAltName(
 // RFC 5280 Section 4.2.1.6.
 //  Subject Alternative Name
 
-StIO::putS( "\n\n\n=============" );
-
-StIO::putS( "Top of Subject Alt Name" );
+StIO::putS( "\nTop of Subject Alt Name" );
 
 const Int32 last = octetString.getLast();
 if( last < 1 )
@@ -589,7 +600,7 @@ SEQUENCE SIZE (1..MAX) OF GeneralName
 */
 
 
-StIO::putS( "=============\n\n\n" );
+StIO::putS( "\n" );
 }
 
 
@@ -673,3 +684,134 @@ for( Int32 count = 0; count < 1000; count++ )
 
 StIO::putS( "=============\n\n\n" );
 }
+
+
+
+void CertExten::parseSubjectKeyID(
+                    const CharBuf& octetString,
+                    const bool critical )
+{
+// RFC 5280 section 4.2.1.2.
+// Subject Key Identifier
+
+StIO::putS( "\nTop of parseSubjectKeyID." );
+
+if( critical )
+  {
+  StIO::putS( "parseSubjectKeyID is critical." );
+  }
+
+const Int32 last = octetString.getLast();
+if( last < 1 )
+  {
+  StIO::putS( "parseSubjectKeyID: no data." );
+  return;
+  }
+
+StIO::putS( "OctetString:" );
+octetString.showHex();
+
+DerEncode derEncode;
+bool constructed = false;
+CharBuf statusBuf;
+
+// This is the one big outer sequence.
+derEncode.readOneTag( octetString,
+                      0, constructed );
+
+if( derEncode.getTag() != 
+              DerEncode::OctetStringTag )
+  throw "parseSubjectKeyID not an OctetString.";
+
+Uint32 seqLength = derEncode.getLength();
+if( seqLength < 1 )
+  {
+  StIO::putS( "parseSubjectKeyID seqLength 0." );
+  return;
+  }
+
+CharBuf seqData;
+derEncode.getValue( seqData );
+
+// const Int32 seqDataLast = seqData.getLast();
+// StIO::printF( "seqDataLast: " );
+// StIO::printFD( seqDataLast );
+// StIO::putLF();
+
+// This is just 20 bytes of data.
+// Or something like that.
+// Just a unique string.
+// An identifier.
+
+seqData.showHex();
+
+StIO::putS( "\n" );
+}
+
+
+
+void CertExten::parseCrlDistribPts(
+                    const CharBuf& octetString,
+                    const bool critical )
+{
+// RFC 5280 section 4.2.1.13.
+// CRL Distribution Points
+
+StIO::putS( 
+ "\n\n\n========\nTop of parseCrlDistribPts." );
+
+if( critical )
+  {
+  StIO::putS( "parseCrlDistribPts is critical." );
+  }
+
+const Int32 last = octetString.getLast();
+if( last < 1 )
+  {
+  StIO::putS( "parseCrlDistribPts: no data." );
+  return;
+  }
+
+StIO::putS( "OctetString:" );
+octetString.showHex();
+
+DerEncode derEncode;
+bool constructed = false;
+CharBuf statusBuf;
+
+// This is the one big outer sequence.
+derEncode.readOneTag( octetString,
+                      0, constructed );
+
+if( derEncode.getTag() != 
+              DerEncode::SequenceTag )
+  throw "parseCrlDistribPts not a SequenceTag.";
+
+Uint32 seqLength = derEncode.getLength();
+if( seqLength < 1 )
+  {
+  StIO::putS( "parseCrlDistribPts seqLength 0." );
+  return;
+  }
+
+CharBuf seqData;
+derEncode.getValue( seqData );
+
+
+const Int32 seqDataLast = seqData.getLast();
+
+StIO::printF( "seqDataLast: " );
+StIO::printFD( seqDataLast );
+StIO::putLF();
+
+seqData.showAscii();
+
+==== This is another sequence. 
+So read this sequence.
+seqData.showHex();
+
+StIO::putS( "========\n\n\n" );
+}
+
+
+
