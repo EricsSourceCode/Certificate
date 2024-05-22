@@ -214,11 +214,13 @@ if( objIDOut.isEqual( crlDistribPtsObjID ))
   parseCrlDistribPts( octetString,
                       critical );
 
+  return;
   }
 
 if( objIDOut.isEqual( certPolicyObjID ))
   {
-  StIO::putS( "CertExten: certPolicyObjID." );
+  parseCertPolicies( octetString,
+                     critical );
   return;
   }
 
@@ -719,7 +721,7 @@ CharBuf statusBuf;
 derEncode.readOneTag( octetString,
                       0, constructed );
 
-if( derEncode.getTag() != 
+if( derEncode.getTag() !=
               DerEncode::OctetStringTag )
   throw "parseSubjectKeyID not an OctetString.";
 
@@ -757,8 +759,7 @@ void CertExten::parseCrlDistribPts(
 // RFC 5280 section 4.2.1.13.
 // CRL Distribution Points
 
-StIO::putS( 
- "\n\n\n========\nTop of parseCrlDistribPts." );
+StIO::putS( "\nTop of parseCrlDistribPts." );
 
 if( critical )
   {
@@ -772,18 +773,17 @@ if( last < 1 )
   return;
   }
 
-StIO::putS( "OctetString:" );
-octetString.showHex();
+// StIO::putS( "OctetString:" );
+// octetString.showHex();
 
 DerEncode derEncode;
 bool constructed = false;
 CharBuf statusBuf;
 
-// This is the one big outer sequence.
 derEncode.readOneTag( octetString,
                       0, constructed );
 
-if( derEncode.getTag() != 
+if( derEncode.getTag() !=
               DerEncode::SequenceTag )
   throw "parseCrlDistribPts not a SequenceTag.";
 
@@ -806,11 +806,98 @@ StIO::putLF();
 
 seqData.showAscii();
 
-==== This is another sequence. 
-So read this sequence.
-seqData.showHex();
+// Int32 next = 
+derEncode.readOneTag( seqData,
+                      0, constructed );
 
-StIO::putS( "========\n\n\n" );
+if( derEncode.getTag() !=
+              DerEncode::SequenceTag )
+  throw "parseCrlDistribPts 2nd SequenceTag.";
+
+seqLength = derEncode.getLength();
+if( seqLength < 1 )
+  {
+  StIO::putS( "parseCrlDistribPts seqLength 0." );
+  return;
+  }
+
+CharBuf seqData2;
+derEncode.getValue( seqData2 );
+
+seqData2.showHex();
+seqData2.showAscii();
+
+derEncode.readOneTag( seqData2,
+                      0, constructed );
+
+if( !derEncode.getIsContextSpec())
+  throw "CertExten tag should be contextSpec.";
+
+CharBuf seqData3;
+derEncode.getValue( seqData3 );
+
+seqData3.showHex();
+seqData3.showAscii();
+
+
+
+derEncode.readOneTag( seqData3,
+                      0, constructed );
+
+if( !derEncode.getIsContextSpec())
+  throw "CertExten tag should be contextSpec.";
+
+CharBuf seqData4;
+derEncode.getValue( seqData4 );
+
+seqData4.showHex();
+seqData4.showAscii();
+
+
+
+derEncode.readOneTag( seqData4,
+                      0, constructed );
+
+if( !derEncode.getIsContextSpec())
+  throw "CertExten tag should be contextSpec.";
+
+CharBuf seqData5;
+derEncode.getValue( seqData5 );
+
+seqData5.showHex();
+seqData5.showAscii();
+
+StIO::putS( "\n" );
+}
+
+
+
+
+
+void CertExten::parseCertPolicies(
+                    const CharBuf& octetString,
+                    const bool critical )
+{
+// RFC 5280 section 4.2.1.4.
+// Certificate Policies
+
+StIO::putS( "\n\n\n=================" );
+
+StIO::putS( "\nTop of parseCertPolicies." );
+
+if( critical )
+  {
+  StIO::putS( "parseCertPolicies is critical." );
+  }
+
+DerEncode derEncode;
+bool constructed = false;
+CharBuf statusBuf;
+
+derEncode.readOneTag( octetString,
+                      0, constructed );
+
+StIO::putS( "=================\n\n\n" );
 }
 
 

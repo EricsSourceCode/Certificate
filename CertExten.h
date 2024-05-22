@@ -189,4 +189,8 @@ class CertExten
                     const CharBuf& octetString,
                     const bool critical );
 
+  void parseCertPolicies(
+                    const CharBuf& octetString,
+                    const bool critical );
+
   };
